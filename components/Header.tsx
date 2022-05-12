@@ -22,7 +22,7 @@ function Header() {
   }, [])
 
   return (
-    <header>
+    <header className={`${isScrolled && 'bg-[#141414'}`}>
       <div className="flex items-center space-x-2 md:space-x-10">
         {/* not using nextJS Image here. Image below is a high-res SVG */}
         <img
