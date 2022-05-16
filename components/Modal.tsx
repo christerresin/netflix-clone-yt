@@ -1,4 +1,10 @@
-import { PlusIcon, XIcon } from '@heroicons/react/outline'
+import {
+  PlusIcon,
+  XIcon,
+  ThumbUpIcon,
+  VolumeOffIcon,
+  VolumeUpIcon,
+} from '@heroicons/react/outline'
 import MuiModal from '@mui/material/Modal'
 import { useEffect, useState } from 'react'
 import { FaPlay } from 'react-icons/fa'
@@ -75,10 +81,20 @@ function Modal() {
                 <FaPlay className="h-7 w-7 text-black" />
                 Play
               </button>
-              <button>
-                <PlusIcon />
+              <button className="modalButton">
+                <PlusIcon className="h-7 w-7" />
+              </button>
+              <button className="modalButton">
+                <ThumbUpIcon className="h-7 w-7" />
               </button>
             </div>
+            <button className="modalButton" onClick={() => setMuted(!muted)}>
+              {muted ? (
+                <VolumeOffIcon className="h-6 w-6" />
+              ) : (
+                <VolumeUpIcon className="h-6 w-6" />
+              )}
+            </button>
           </div>
         </div>
       </>
