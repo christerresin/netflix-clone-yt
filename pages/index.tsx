@@ -1,16 +1,16 @@
 import Head from 'next/head'
+import { useRecoilValue } from 'recoil'
+import { lazy } from 'react'
 
 import Header from '../components/Header'
 import Banner from '../components/Banner'
-
+import Row from '../components/Row'
+import Plans from '../components/Plans'
+import Modal from '../components/Modal'
 import requests from '../utils/requests'
 import { Movie } from '../typings'
-import Row from '../components/Row'
 import useAuth from '../hooks/useAuth'
-import { lazy } from 'react'
-import { useRecoilValue } from 'recoil'
 import { modalState } from '../atoms/modalAtom'
-import Modal from '../components/Modal'
 
 export const getServerSideProps = async () => {
   const [
@@ -74,7 +74,7 @@ const Home = ({
 
   if (loading || subscription === null) return null
 
-  if (!subscription) return <div>PLANS</div>
+  if (!subscription) return <Plans />
 
   return (
     <div

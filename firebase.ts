@@ -8,17 +8,17 @@ import { getAuth } from 'firebase/auth'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyDXy3qjs3CQatwFVOcCoBZJCzors4ZYb0g',
-  authDomain: 'nextflix-yt.firebaseapp.com',
-  projectId: 'nextflix-yt',
-  storageBucket: 'nextflix-yt.appspot.com',
-  messagingSenderId: '890703289283',
-  appId: '1:890703289283:web:f456e7dca870e465c2fb76',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECTID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGEBUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APPID,
 }
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
-const db = getFirestore()
+const db = getFirestore(app)
 const auth = getAuth()
 
 export default app

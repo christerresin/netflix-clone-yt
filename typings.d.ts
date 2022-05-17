@@ -31,3 +31,11 @@ export type Element = {
     | 'Trailer'
     | 'Teaser'
 }
+
+export type Plan = {
+  price: string
+  name: string
+  resolution: string
+  portability: boolean
+  videoQuality: string
+}
