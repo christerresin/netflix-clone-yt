@@ -1,13 +1,14 @@
 import { CheckIcon } from '@heroicons/react/outline'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useCollection } from 'react-firebase-hooks/firestore'
+import { useEffect, useState } from 'react'
+import { DocumentData } from '@firebase/firestore-types'
+import { collection, getDocs } from 'firebase/firestore'
 
 import useAuth from '../hooks/useAuth'
 import { db } from '../firebase'
-import { collection, getDocs, onSnapshot } from 'firebase/firestore'
-import { DocumentData } from '@firebase/firestore-types'
-import { useEffect, useState } from 'react'
+import { Plan } from '../typings'
+import Table from './Table'
 
 function Plans() {
   const { logout } = useAuth()
@@ -21,6 +22,8 @@ function Plans() {
     }
     getData()
   }, [])
+
+  if (!plans) return null
 
   return (
     <div>
@@ -66,12 +69,14 @@ function Plans() {
 
         <div className="mt-4 flex flex-col space-y-4">
           <div className="flex w-full items-center justify-end self-end md:w-3/5">
-            <div className="planBox">Standard</div>
-            <div className="planBox">Standard</div>
-            <div className="planBox">Standard</div>
+            {plans?.map((plan: Plan) => (
+              <div className="planBox" key={plan.name}>
+                {plan.name}
+              </div>
+            ))}
           </div>
 
-          {/* <Table /> */}
+          <Table plans={plans} />
 
           <button>Subscribe</button>
         </div>
