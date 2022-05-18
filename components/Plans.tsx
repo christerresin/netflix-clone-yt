@@ -22,8 +22,11 @@ function Plans() {
       setPlans(response.docs.map((data) => data.data()))
     }
     getData()
-    setSelectedPlan(plans[2])
   }, [])
+
+  useEffect(() => {
+    setSelectedPlan(plans[2])
+  }, [plans])
 
   if (!plans) return null
 
@@ -85,7 +88,7 @@ function Plans() {
               </div>
             ))}
           </div>
-          <Table plans={plans} />
+          <Table plans={plans} selectedPlan={selectedPlan!} />
 
           <button>Subscribe</button>
         </div>
