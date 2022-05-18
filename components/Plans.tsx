@@ -12,7 +12,8 @@ import Table from './Table'
 
 function Plans() {
   const { logout } = useAuth()
-  const [plans, setPlans] = useState<DocumentData | null>()
+  const [plans, setPlans] = useState<DocumentData>([])
+  const [selectedPlan, setSelectedPlan] = useState<DocumentData | null>(null)
 
   useEffect(() => {
     const getData = async () => {
@@ -21,6 +22,7 @@ function Plans() {
       setPlans(response.docs.map((data) => data.data()))
     }
     getData()
+    setSelectedPlan(plans[2])
   }, [])
 
   if (!plans) return null
@@ -70,12 +72,19 @@ function Plans() {
         <div className="mt-4 flex flex-col space-y-4">
           <div className="flex w-full items-center justify-end self-end md:w-3/5">
             {plans?.map((plan: Plan) => (
-              <div className="planBox" key={plan.name}>
+              <div
+                className={`planBox ${
+                  selectedPlan?.name === plan.name
+                    ? 'opacity-100'
+                    : 'opacity-60'
+                }`}
+                key={plan.name}
+                onClick={() => setSelectedPlan(plan)}
+              >
                 {plan.name}
               </div>
             ))}
           </div>
-
           <Table plans={plans} />
 
           <button>Subscribe</button>
