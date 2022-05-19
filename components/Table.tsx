@@ -4,7 +4,7 @@ import { Plan } from '../typings'
 
 type Props = {
   plans: DocumentData
-  selectedPlan: DocumentData
+  selectedPlan: DocumentData | null
 }
 
 function Table({ plans, selectedPlan }: Props) {
@@ -27,6 +27,7 @@ function Table({ plans, selectedPlan }: Props) {
           ))}
           <td></td>
         </tr>
+
         <tr className="tableRow">
           <td className="tableDataTitle">Video Quality</td>
           {plans?.map((plan: Plan) => (
@@ -42,6 +43,7 @@ function Table({ plans, selectedPlan }: Props) {
             </td>
           ))}
         </tr>
+
         <tr className="tableRow">
           <td className="tableDataTitle">Resolution</td>
           {plans?.map((plan: Plan) => (
@@ -57,6 +59,7 @@ function Table({ plans, selectedPlan }: Props) {
             </td>
           ))}
         </tr>
+
         <tr className="tableRow">
           <td className="tableDataTitle">
             Watch on your TV, computer, mobile phone and tablet

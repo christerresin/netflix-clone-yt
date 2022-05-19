@@ -3,17 +3,19 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { DocumentData } from '@firebase/firestore-types'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, doc, getDocs, setDoc, updateDoc } from 'firebase/firestore'
 
 import useAuth from '../hooks/useAuth'
 import { db } from '../firebase'
 import { Plan } from '../typings'
 import Table from './Table'
+import Loader from './Loader'
 
 function Plans() {
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
   const [plans, setPlans] = useState<DocumentData>([])
   const [selectedPlan, setSelectedPlan] = useState<DocumentData | null>(null)
+  const [isBillingLoading, setIsBillingLoading] = useState(false)
 
   useEffect(() => {
     const getData = async () => {
@@ -27,6 +29,42 @@ function Plans() {
   useEffect(() => {
     setSelectedPlan(plans[2])
   }, [plans])
+
+  const subscribeToPlan = async () => {
+    if (!user) return
+
+    const userData = {
+      uid: user.uid,
+      email: user.email,
+      subscription: selectedPlan?.name,
+    }
+
+    // Look for user in dB
+    const querySnapshot = await getDocs(collection(db, 'users'))
+    querySnapshot.forEach((document) => {
+      if (user.uid === document.data().uid) {
+        let foundUser = {
+          uid: document.data().uid,
+          email: document.data().email,
+          subscription: document.data().subscription,
+          docId: document.id,
+        }
+        // Add user and selected subscription to dB
+        if (!foundUser) {
+          const newUserRef = doc(collection(db, 'users'))
+          setDoc(newUserRef, userData)
+        }
+
+        // Update users subscription plan
+        if (foundUser) {
+          const userRef = doc(db, 'users', foundUser.docId)
+          updateDoc(userRef, {
+            subscription: userData.subscription,
+          })
+        }
+      }
+    })
+  }
 
   if (!plans) return null
 
@@ -53,7 +91,7 @@ function Plans() {
           Sign Out
         </button>
       </header>
-      <main className="transisiton-all max-w-5xl px-5 pt-28 pb-12 md:px-10">
+      <main className="mx-auto max-w-5xl px-5 pt-28 pb-12 transition-all md:px-10">
         <h1 className="mb-3 text-3xl font-medium">
           Choose the plan that's right for you
         </h1>
@@ -90,7 +128,19 @@ function Plans() {
           </div>
           <Table plans={plans} selectedPlan={selectedPlan!} />
 
-          <button>Subscribe</button>
+          <button
+            disabled={!selectedPlan || isBillingLoading}
+            className={`mx-auto w-11/12 rounded bg-[#E50914] py-4 text-xl shadow hover:bg-[#f6121d] md:w-[420px] ${
+              isBillingLoading && 'opacity-60'
+            }`}
+            onClick={subscribeToPlan}
+          >
+            {isBillingLoading ? (
+              <Loader color="dark:fill-gray-300" />
+            ) : (
+              'Subscribe'
+            )}
+          </button>
         </div>
       </main>
     </div>
