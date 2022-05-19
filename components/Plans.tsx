@@ -31,12 +31,32 @@ function Plans() {
   }, [plans])
 
   const subscribeToPlan = async () => {
+    setIsBillingLoading(true)
     if (!user) return
 
     const userData = {
       uid: user.uid,
       email: user.email,
       subscription: selectedPlan?.name,
+    }
+
+    const createNewUser = async () => {
+      const newUserRef = doc(collection(db, 'users'))
+      await setDoc(newUserRef, userData)
+      setIsBillingLoading(false)
+    }
+
+    const updateFoundUser = async (foundUserObj: {
+      docId: string
+      email: string
+      uid: string
+      subscription: string
+    }) => {
+      const userRef = doc(db, 'users', foundUserObj.docId)
+      await updateDoc(userRef, {
+        subscription: userData.subscription,
+      })
+      setIsBillingLoading(false)
     }
 
     // Look for user in dB
@@ -49,18 +69,12 @@ function Plans() {
           subscription: document.data().subscription,
           docId: document.id,
         }
-        // Add user and selected subscription to dB
         if (!foundUser) {
-          const newUserRef = doc(collection(db, 'users'))
-          setDoc(newUserRef, userData)
+          createNewUser()
         }
 
-        // Update users subscription plan
         if (foundUser) {
-          const userRef = doc(db, 'users', foundUser.docId)
-          updateDoc(userRef, {
-            subscription: userData.subscription,
-          })
+          updateFoundUser(foundUser)
         }
       }
     })
