@@ -1,6 +1,5 @@
 import Head from 'next/head'
 import { useRecoilValue } from 'recoil'
-import { lazy } from 'react'
 
 import Header from '../components/Header'
 import Banner from '../components/Banner'
@@ -11,6 +10,9 @@ import requests from '../utils/requests'
 import { Movie } from '../typings'
 import useAuth from '../hooks/useAuth'
 import { modalState } from '../atoms/modalAtom'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
+import { useState } from 'react'
 
 export const getServerSideProps = async () => {
   const [
@@ -68,11 +70,24 @@ const Home = ({
   topRated,
   trendingNow,
 }: Props) => {
+  const [subscription, setSubscription] = useState<null | Boolean>(null)
   const { loading } = useAuth()
   const showModal = useRecoilValue(modalState)
-  const subscription = false
 
-  if (loading || subscription === null) return null
+  const { user } = useAuth()
+  const findUser = async () => {
+    const querySnapshot = await getDocs(collection(db, 'users'))
+    querySnapshot.forEach((document) => {
+      if (user?.uid === document.data().uid && document.data().subscription) {
+        setSubscription(true)
+      }
+    })
+  }
+
+  if (loading || subscription === null) {
+    findUser()
+    return null
+  }
 
   if (!subscription) return <Plans />
 
