@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { DocumentData } from '@firebase/firestore-types'
 import { collection, doc, getDocs, setDoc, updateDoc } from 'firebase/firestore'
+import { useRouter } from 'next/router'
 
 import useAuth from '../hooks/useAuth'
 import { db } from '../firebase'
@@ -16,14 +17,21 @@ function Plans() {
   const [plans, setPlans] = useState<DocumentData>([])
   const [selectedPlan, setSelectedPlan] = useState<DocumentData | null>(null)
   const [isBillingLoading, setIsBillingLoading] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
+    let isApiSubscribed = true
     const getData = async () => {
       const databaseRef = collection(db, 'plans')
       const response = await getDocs(databaseRef)
       setPlans(response.docs.map((data) => data.data()))
     }
-    getData()
+    if (isApiSubscribed) {
+      getData()
+    }
+    return () => {
+      isApiSubscribed = false
+    }
   }, [])
 
   useEffect(() => {
@@ -38,6 +46,7 @@ function Plans() {
       uid: user.uid,
       email: user.email,
       subscription: selectedPlan?.name,
+      subscriptionDate: Date.now(),
     }
 
     const createNewUser = async () => {
@@ -51,10 +60,12 @@ function Plans() {
       email: string
       uid: string
       subscription: string
+      subscriptionDate: number
     }) => {
       const userRef = doc(db, 'users', foundUserObj.docId)
       await updateDoc(userRef, {
         subscription: userData.subscription,
+        subscriptionDate: Date.now(),
       })
       setIsBillingLoading(false)
     }
@@ -68,13 +79,16 @@ function Plans() {
           email: document.data().email,
           subscription: document.data().subscription,
           docId: document.id,
+          subscriptionDate: document.data().subscriptionDate,
         }
         if (!foundUser) {
           createNewUser()
+          router.push('/account')
         }
 
         if (foundUser) {
           updateFoundUser(foundUser)
+          router.push('/account')
         }
       }
     })

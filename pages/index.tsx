@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useRecoilValue } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 
 import Header from '../components/Header'
 import Banner from '../components/Banner'
@@ -13,6 +13,7 @@ import { modalState } from '../atoms/modalAtom'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useState } from 'react'
+import { planState, subscriptionState } from '../atoms/subscriptionAtom'
 
 export const getServerSideProps = async () => {
   const [
@@ -73,19 +74,27 @@ const Home = ({
   const [subscription, setSubscription] = useState<null | Boolean>(null)
   const { loading } = useAuth()
   const showModal = useRecoilValue(modalState)
+  const [userSubscription, setUserSubscription] =
+    useRecoilState(subscriptionState)
+  const [userPlan, setUserPlan] = useRecoilState(planState)
 
   const { user } = useAuth()
-  const findUser = async () => {
+  const checkUserSubscription = async () => {
     const querySnapshot = await getDocs(collection(db, 'users'))
     querySnapshot.forEach((document) => {
+      if (!document.data().subscription) {
+        setSubscription(false)
+      }
       if (user?.uid === document.data().uid && document.data().subscription) {
+        setUserSubscription(document.data().subscription)
+        setUserPlan(document.data().subscriptionDate)
         setSubscription(true)
       }
     })
   }
 
   if (loading || subscription === null) {
-    findUser()
+    checkUserSubscription()
     return null
   }
 
