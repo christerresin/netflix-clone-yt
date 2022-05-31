@@ -1,11 +1,11 @@
+import { DocumentData } from '@firebase/firestore-types'
 import Image from 'next/image'
 import { useRecoilState } from 'recoil'
 import { modalState, movieState } from '../atoms/modalAtom'
 import { Movie } from '../typings'
 
 type Props = {
-  movie: Movie
-  // movie: Movie | DocumentData
+  movie: Movie | DocumentData
 }
 
 function Thumbnail({ movie }: Props) {

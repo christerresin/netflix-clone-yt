@@ -1,5 +1,7 @@
 import Head from 'next/head'
 import { useRecoilState, useRecoilValue } from 'recoil'
+import { collection, getDocs } from 'firebase/firestore'
+import { useState } from 'react'
 
 import Header from '../components/Header'
 import Banner from '../components/Banner'
@@ -9,11 +11,11 @@ import Modal from '../components/Modal'
 import requests from '../utils/requests'
 import { Movie } from '../typings'
 import useAuth from '../hooks/useAuth'
-import { modalState } from '../atoms/modalAtom'
-import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
-import { useState } from 'react'
+import { modalState, movieState } from '../atoms/modalAtom'
 import { planState, subscriptionState } from '../atoms/subscriptionAtom'
+import useList from '../hooks/useList'
+import { userRefState } from '../atoms/userRefAtom'
 
 export const getServerSideProps = async () => {
   const [
@@ -82,16 +84,21 @@ const Home = ({
   const checkUserSubscription = async () => {
     const querySnapshot = await getDocs(collection(db, 'users'))
     querySnapshot.forEach((document) => {
-      if (!document.data().subscription) {
-        setSubscription(false)
-      }
-      if (user?.uid === document.data().uid && document.data().subscription) {
-        setUserSubscription(document.data().subscription)
-        setUserPlan(document.data().subscriptionDate)
-        setSubscription(true)
+      if (user?.uid === document.data().uid) {
+        if (!document.data().subscription) {
+          setSubscription(false)
+        }
+        if (document.data().subscription) {
+          setUserSubscription(document.data().subscription)
+          setUserPlan(document.data().subscriptionDate)
+          setSubscription(true)
+        }
       }
     })
   }
+  const [userRef, setUserRef] = useRecoilState(userRefState)
+  const movie = useRecoilValue(movieState)
+  const list = useList(user?.uid)
 
   if (loading || subscription === null) {
     checkUserSubscription()
@@ -118,6 +125,7 @@ const Home = ({
           <Row title="Top Rated" movies={topRated} />
           <Row title="Action Thrillers" movies={actionMovies} />
           {/* My list */}
+          {list.length > 0 && <Row title="My List" movies={list} />}
           <Row title="Comedies" movies={comedyMovies} />
           <Row title="Scary Movies" movies={horrorMovies} />
           <Row title="Romance Movies" movies={romanceMovies} />

@@ -1,3 +1,4 @@
+import { DocumentData } from '@firebase/firestore-types'
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/outline'
 import { useRef, useState } from 'react'
 import { Movie } from '../typings'
@@ -5,8 +6,8 @@ import Thumbnail from './Thumbnail'
 
 type Props = {
   title: string
-  // movie: Movie | DocumentData[]
-  movies: Movie[]
+  movies: Movie[] | DocumentData[]
+  // movie: Movie
 }
 
 function Row({ title, movies }: Props) {
