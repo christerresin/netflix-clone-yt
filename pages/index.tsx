@@ -96,8 +96,6 @@ const Home = ({
       }
     })
   }
-  const [userRef, setUserRef] = useRecoilState(userRefState)
-  const movie = useRecoilValue(movieState)
   const list = useList(user?.uid)
 
   if (loading || subscription === null) {

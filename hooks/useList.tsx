@@ -1,11 +1,8 @@
 import {
   collection,
-  doc,
   DocumentData,
-  getDocs,
   onSnapshot,
   query,
-  QuerySnapshot,
   where,
 } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
@@ -21,7 +18,6 @@ function useList(uid: string | undefined) {
 
     const q = query(collection(db, 'users'), where('uid', '==', uid))
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const moviesList = []
       querySnapshot.forEach((doc) => {
         setList(doc.data().myList)
       })

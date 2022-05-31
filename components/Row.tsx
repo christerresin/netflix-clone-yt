@@ -7,7 +7,6 @@ import Thumbnail from './Thumbnail'
 type Props = {
   title: string
   movies: Movie[] | DocumentData[]
-  // movie: Movie
 }
 
 function Row({ title, movies }: Props) {
