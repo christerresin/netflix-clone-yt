@@ -1,18 +1,32 @@
+import { DocumentData } from '@firebase/firestore-types'
 import {
   PlusIcon,
   XIcon,
   ThumbUpIcon,
   VolumeOffIcon,
   VolumeUpIcon,
+  CheckIcon,
 } from '@heroicons/react/outline'
 import MuiModal from '@mui/material/Modal'
+import {
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  updateDoc,
+} from 'firebase/firestore'
 import { useEffect, useState } from 'react'
+import toast, { Toaster } from 'react-hot-toast'
 import { FaPlay } from 'react-icons/fa'
 import ReactPlayer from 'react-player/lazy'
 import { useRecoilState } from 'recoil'
 
 import { modalState, movieState } from '../atoms/modalAtom'
-import { Element, Genre } from '../typings'
+import { db } from '../firebase'
+import useAuth from '../hooks/useAuth'
+import { Element, Genre, Movie } from '../typings'
 
 function Modal() {
   const [showModal, setShowModal] = useRecoilState(modalState)
@@ -20,6 +34,9 @@ function Modal() {
   const [trailer, setTrailer] = useState('')
   const [genres, setGenres] = useState<Genre[]>([])
   const [muted, setMuted] = useState(true)
+  const [addedToList, setAddedToList] = useState(false)
+  const [movies, setMovies] = useState<DocumentData[] | Movie[]>([])
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!movie) {
@@ -48,6 +65,60 @@ function Modal() {
     fetchMovie()
   }, [movie])
 
+  // Find all the movies in the user's list
+  useEffect(() => {
+    if (user) {
+      const setAllMovies = async () => {
+        const querySnapshot = await getDocs(collection(db, 'users'))
+        return querySnapshot.forEach((document) => {
+          if (user.uid === document.data().uid) {
+            setMovies(document.data().myList)
+          }
+        })
+      }
+      setAllMovies()
+    }
+  }, [db, movie?.id, movies])
+
+  // Check if the movie is already in the user's list
+  useEffect(
+    () =>
+      setAddedToList(
+        movies.findIndex((result) => result.id === movie?.id) !== -1
+      ),
+    [movies]
+  )
+
+  const handleList = async () => {
+    if (addedToList && user) {
+      const querySnapshot = await getDocs(collection(db, 'users'))
+      querySnapshot.forEach((document) => {
+        if (user.uid === document.data().uid) {
+          const docRef = doc(db, 'users', document.id)
+          updateDoc(docRef, { myList: arrayRemove(movie!) })
+        }
+      })
+      toast(
+        `${movie?.title || movie?.original_name} has been removed from My List`,
+        { duration: 8000 }
+      )
+    }
+    if (user && !addedToList) {
+      const querySnapshot = await getDocs(collection(db, 'users'))
+      querySnapshot.forEach((document) => {
+        if (user.uid === document.data().uid) {
+          const docRef = doc(db, 'users', document.id)
+          updateDoc(docRef, { myList: arrayUnion(movie!) })
+        }
+      })
+
+      toast(
+        `${movie?.title || movie?.original_name} has been added to My List`,
+        { duration: 8000 }
+      )
+    }
+  }
+
   const handleClose = () => {
     setShowModal(false)
   }
@@ -59,6 +130,7 @@ function Modal() {
       className="fixed !top-7 left-0 right-0 z-50 mx-auto w-full max-w-5xl overflow-hidden overflow-y-hidden rounded-md scrollbar-hide"
     >
       <>
+        <Toaster position="bottom-center" />
         <button
           onClick={handleClose}
           className="modalButton absolute right-5 top-5 !z-40 h-9 w-9 border-none bg-[#181818] hover:bg-[#181818]"
@@ -81,8 +153,12 @@ function Modal() {
                 <FaPlay className="h-7 w-7 text-black" />
                 Play
               </button>
-              <button className="modalButton">
-                <PlusIcon className="h-7 w-7" />
+              <button className="modalButton" onClick={handleList}>
+                {addedToList ? (
+                  <CheckIcon className="h-7 w-7" />
+                ) : (
+                  <PlusIcon className="h-7 w-7" />
+                )}
               </button>
               <button className="modalButton">
                 <ThumbUpIcon className="h-7 w-7" />
